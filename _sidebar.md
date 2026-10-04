@@ -1,5 +1,6 @@
 - **首页**
   - [知识库总览](README.md)
+  - [🤖 AI 顾问（在线问答）](https://udify.app/chat/Rdyl6Mx6Mj2Y1Ii0)
 
 - **01 产品**
   - [菜单与产品上新](01-产品/菜单与产品上新.md)
