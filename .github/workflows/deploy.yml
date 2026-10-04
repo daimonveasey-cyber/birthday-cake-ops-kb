@@ -21,6 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Sync wiki content into site (wiki 为知识正本)
+        run: |
+          find wiki -name "*.md" ! -name "INDEX.md" ! -name "AGENTS.md" | while read -r f; do
+            dest="site/${f#wiki/}"
+            mkdir -p "$(dirname "$dest")"
+            cp "$f" "$dest"
+          done
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
