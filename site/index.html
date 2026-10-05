@@ -4,17 +4,156 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>蛋糕运营 AI 顾问</title>
-  <meta name="description" content="生日蛋糕行业运营 AI 顾问：补单、推广、评价、私域、抖音、定价、供应链，直接提问直接给答案。">
+  <meta name="description" content="生日蛋糕行业 AI 顾问：经营问答 + 朋友圈灵感库，直接提问直接给答案。">
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: #10141f; overflow: hidden; }
-    iframe { width: 100%; height: 100dvh; border: 0; display: block; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #f5f6f8; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .topbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: #fff; border-bottom: 1px solid #e5e7eb;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-weight: 700; font-size: 15px; margin-right: 6px; white-space: nowrap; }
+    .tab {
+      border: 1px solid #d1d5db; background: #fff; color: #374151;
+      padding: 6px 14px; border-radius: 18px; font-size: 14px; cursor: pointer;
+    }
+    .tab.active { background: #1C64F2; border-color: #1C64F2; color: #fff; }
+    .view { display: none; height: calc(100dvh - 49px); }
+    .view.active { display: block; }
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+    /* 朋友圈灵感库 */
+    .m-wrap { max-width: 760px; margin: 0 auto; padding: 14px 12px 40px; }
+    .hero {
+      background: linear-gradient(135deg, #1C64F2, #6d8dff); color: #fff;
+      border-radius: 14px; padding: 16px 18px; margin-bottom: 14px;
+    }
+    .hero b { font-size: 16px; }
+    .hero p { margin: 6px 0 0; font-size: 13px; opacity: .92; line-height: 1.6; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip { border: 1px solid #d1d5db; background: #fff; border-radius: 14px; padding: 5px 12px; font-size: 13px; cursor: pointer; color: #374151; }
+    .chip.on { background: #111827; color: #fff; border-color: #111827; }
+    .card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .card h3 { margin: 0 0 8px; font-size: 15px; color: #111827; }
+    .card .txt { white-space: pre-wrap; font-size: 14px; line-height: 1.8; color: #1f2937; background: #f9fafb; border-radius: 8px; padding: 12px; }
+    .card .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+    .card .src { font-size: 12px; color: #6b7280; }
+    .btn { border: 0; background: #1C64F2; color: #fff; border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .btn:active { opacity: .85; }
+    .howto { background: #fff; border-radius: 12px; padding: 14px 16px; margin: 14px 0; font-size: 13px; color: #374151; line-height: 1.8; }
+    .howto b { color: #111827; }
+    .howto code { background: #eef2ff; color: #1C64F2; border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #111827; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; display: none; z-index: 99; }
   </style>
 </head>
 <body>
-  <iframe
-    src="https://udify.app/chat/Rdyl6Mx6Mj2Y1Ii0"
-    allow="microphone; clipboard-write"
-    title="蛋糕运营 AI 顾问">
-  </iframe>
+  <div class="topbar">
+    <span class="brand">🎂 蛋糕运营</span>
+    <button class="tab active" data-v="chat" onclick="show('chat')">AI 问答</button>
+    <button class="tab" data-v="moments" onclick="show('moments')">朋友圈灵感库</button>
+  </div>
+
+  <div id="v-chat" class="view active">
+    <iframe id="chatframe" src="" allow="microphone; clipboard-write" title="AI 顾问"></iframe>
+  </div>
+
+  <div id="v-moments" class="view">
+    <div class="m-wrap">
+      <div class="hero">
+        <b>朋友圈灵感库</b>
+        <p>由 160 万条蛋糕行业真实聊天记录提炼的知识库生成，每条都带知识依据。点「复制」发朋友圈即可，【】里的数字换成你自己的。</p>
+      </div>
+
+      <div class="howto">
+        <b>🤖 想要定制版？让 AI 帮你写：</b><br>
+        打开上方「AI 问答」，直接说——<br>
+        <code onclick="usePrompt(this)">帮我写一条中秋节蛋糕礼盒预售的朋友圈文案，要有具体数字和预订方式</code><br>
+        它会先查行业知识库，再按你的情况给文案。也可以换成任何主题（开业、淡季、老客回馈、差评澄清……）。
+      </div>
+
+      <div class="chips" id="chips"></div>
+      <div id="list"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">已复制 ✓</div>
+
+  <script src="moments-data.js"></script>
+  <script>
+    // ---- 标签页 ----
+    var chatLoaded = false;
+    function show(v) {
+      document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.v === v); });
+      document.querySelectorAll('.view').forEach(function (el) { el.classList.remove('active'); });
+      document.getElementById('v-' + v).classList.add('active');
+      if (v === 'chat' && !chatLoaded) {
+        document.getElementById('chatframe').src = 'https://udify.app/chat/Rdyl6Mx6Mj2Y1Ii0';
+        chatLoaded = true;
+      }
+      window.scrollTo(0, 0);
+    }
+    // 首屏即载入聊天（默认页）
+    show('chat');
+
+    // ---- 朋友圈灵感库 ----
+    var cur = '全部';
+    function toast(msg) {
+      var el = document.getElementById('toast');
+      el.textContent = msg; el.style.display = 'block';
+      setTimeout(function () { el.style.display = 'none'; }, 1200);
+    }
+    function copyTxt(txt, btn) {
+      function done() { toast('已复制 ✓ 去朋友圈粘贴吧'); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done).catch(function () { fallback(); });
+      } else { fallback(); }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    }
+    function usePrompt(el) {
+      copyTxt(el.textContent);
+      show('chat');
+      toast('提问话术已复制 ✓ 切到 AI 问答粘贴发送');
+    }
+    function tags() {
+      var s = ['全部'];
+      window.MOMENTS.forEach(function (m) { if (s.indexOf(m.tag) < 0) s.push(m.tag); });
+      return s;
+    }
+    function renderChips() {
+      var el = document.getElementById('chips');
+      el.innerHTML = '';
+      tags().forEach(function (t) {
+        var b = document.createElement('button');
+        b.className = 'chip' + (t === cur ? ' on' : '');
+        b.textContent = t;
+        b.onclick = function () { cur = t; renderChips(); renderList(); };
+        el.appendChild(b);
+      });
+    }
+    function renderList() {
+      var el = document.getElementById('list');
+      el.innerHTML = '';
+      window.MOMENTS.forEach(function (m, i) {
+        if (cur !== '全部' && m.tag !== cur) return;
+        var d = document.createElement('div');
+        d.className = 'card';
+        d.innerHTML = '<h3>' + m.t + '</h3>'
+          + '<div class="txt">' + m.txt.replace(/</g, '&lt;') + '</div>'
+          + '<div class="meta"><span class="src">知识依据：' + m.src + '</span>'
+          + '<button class="btn" data-i="' + i + '">复制文案</button></div>';
+        el.appendChild(d);
+      });
+      el.querySelectorAll('.btn').forEach(function (b) {
+        b.onclick = function () { copyTxt(window.MOMENTS[+b.dataset.i].txt); };
+      });
+    }
+    renderChips(); renderList();
+  </script>
 </body>
 </html>
